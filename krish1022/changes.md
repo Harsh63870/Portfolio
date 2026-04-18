@@ -25,3 +25,6 @@ This bug made my mind go round and round, I had to go look up how **Navigation C
 ## 6. Beautiful Blue Ring Not Focusing on Correct Element
 When we click on an element on the **Navigation Tool**, it gives it a beautiful blue ring around it, but when we scroll normally this ring never switches between elements.
 The fix was simple I copied the ring css from class which was set to be triggered only when focused and removed the focus part and put it in the `activeSession === item.id` css.
+
+## 7. Ring Staying
+So when we clicked on some icon in the **Navigation Tool**, a ring came around it, but when we scrolled the ring stayed there and another ring came for the active icon, so I just removed the `focus CSS` and it worked.
