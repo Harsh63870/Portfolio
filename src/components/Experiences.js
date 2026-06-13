@@ -10,24 +10,30 @@ const experiences = [
     title: 'B.Tech in Information Technology',
     organization: 'Indian Institute of Information Technology, Gwalior',
     period: '2024 - Present',
-    description: 'Pursuing Bachelor of Technology with focus on software development, algorithms, and system design.',
+    description: 'Building a strong foundation in algorithms, data structures, and backend systems. I focus on writing clean, efficient code and applying it through projects and open-source work.',
     icon: <FaGraduationCap />,
-    skills: ['Data Structures', 'Algorithms', 'Software Engineering', 'Database Systems'],
-    achievements: ['Maintaining strong academic performance', 'Active in coding competitions']
+    skills: ['Problem Solving', 'Backend Systems', 'Open Source Development', 'Algorithms'],
+    achievements: [
+      'CGPA: 9.3 / 10',
+      '447+ DSA problems solved · 1859 contest rating',
+      'Consistent daily algorithmic problem solving',
+    ],
   },
   {
-  title: "Mentor",
-  company: "SWOC (Social Winter of Code)",
-  period: "Dec 2025 – Mar 2026",
-  description: "Mentored participants in open-source development, reviewed pull requests, guided beginners in Git, GitHub, and development workflows, and helped improve project contributions."
-},
+    type: 'work',
+    title: 'Mentor',
+    organization: 'SWOC (Social Winter of Code)',
+    period: 'Dec 2025 – Mar 2026',
+    description: 'Mentored open-source contributors and reviewed their pull requests. Guided beginners through Git, GitHub, and real development workflows, improving the quality and consistency of contributions across the program.',
+    icon: <FaBriefcase />,
+  },
 ];
 
 const Experiences = () => {
   return (
     <section 
       id="experiences" 
-      className="py-16 sm:py-20 md:py-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+      className="py-16 sm:py-20 md:py-24 text-gray-900 dark:text-white"
       aria-labelledby="experiences-heading"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

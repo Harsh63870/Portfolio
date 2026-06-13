@@ -40,8 +40,13 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
+html {
   background-color: var(--bg-primary);
+}
+
+body {
+  /* transparent so the fixed 3D site background shows through translucent sections */
+  background-color: transparent;
   color: var(--text-primary);
 }
 
