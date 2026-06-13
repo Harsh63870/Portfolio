@@ -90,16 +90,28 @@ const Statistics = ({ className }) => {
         const calendarRaw = lcData.matchedUser.submissionCalendar;
         const calendar = typeof calendarRaw === 'string' ? JSON.parse(calendarRaw) : calendarRaw;
 
-        const monthlyMap = new Map();
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+        // Aggregate submissions per actual year-month (so different years don't merge).
+        const byMonth = new Map();
         Object.entries(calendar).forEach(([timestamp, count]) => {
           const date = new Date(parseInt(timestamp) * 1000);
-          const month = months[date.getMonth()];
-          monthlyMap.set(month, (monthlyMap.get(month) || 0) + count);
+          const key = `${date.getFullYear()}-${date.getMonth()}`;
+          byMonth.set(key, (byMonth.get(key) || 0) + Number(count));
         });
 
-        const currentMonthReduced = months.map(m => ({ month: m, problems: monthlyMap.get(m) || 0 }));
+        // Build a rolling window of the last 12 months ending at the current month,
+        // so the chart advances over time instead of being stuck on a fixed Jan–Dec axis.
+        const now = new Date();
+        const rollingMonths = [];
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          rollingMonths.push({
+            month: `${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`,
+            problems: byMonth.get(key) || 0,
+          });
+        }
 
         // Process language stats
         const languageColors = {
@@ -132,7 +144,7 @@ const Statistics = ({ className }) => {
             ranking: ranking ? `#${ranking}` : 'N/A',
             contestRating,
             contestGlobalRanking,
-            monthlyData: currentMonthReduced.filter(d => d.problems > 0),
+            monthlyData: rollingMonths,
             easy: easySolved,
             medium: mediumSolved,
             hard: hardSolved,
@@ -181,140 +193,184 @@ const Statistics = ({ className }) => {
     { name: 'Codeforces', problems: stats.loading ? 0 : stats.codeforces.totalSolved, color: '#1f8acb' },
   ];
 
-  const metricColorClass = (color) => {
-    switch (color) {
-      case 'blue':
-        return 'text-blue-500';
-      case 'green':
-        return 'text-green-500';
-      case 'yellow':
-        return 'text-yellow-500';
-      case 'purple':
-        return 'text-purple-500';
-      default:
-        return 'text-blue-500';
-    }
+  const lcTotal = stats.loading ? 0 : stats.leetcode.totalSolved;
+  const difficulty = [
+    { label: 'Easy', value: stats.loading ? 0 : stats.leetcode.easy, color: '#22c55e' },
+    { label: 'Medium', value: stats.loading ? 0 : stats.leetcode.medium, color: '#eab308' },
+    { label: 'Hard', value: stats.loading ? 0 : stats.leetcode.hard, color: '#ef4444' },
+  ];
+
+  const tooltipStyle = {
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: '12px',
+    color: '#f8fafc',
+    fontSize: '13px',
+  };
+
+  const cardBase =
+    'relative overflow-hidden rounded-3xl border border-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl';
+
+  const fadeUp = {
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.2 },
   };
 
   return (
-    <div
-      className={`bg-white dark:bg-gray-900 text-gray-900 dark:text-white ${className || 'py-16 sm:py-20 md:py-24'}`}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.h2
-          id="statistics-heading"
-          className="text-4xl sm:text-5xl font-bold text-center mb-12 sm:mb-16 tracking-tight"
+    <div className={`text-gray-900 dark:text-white ${className || 'py-16 sm:py-20 md:py-24'}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.5 }}
         >
-          Statistics Dashboard
-        </motion.h2>
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+            </span>
+            Live data
+          </span>
+          <h2
+            id="statistics-heading"
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 dark:from-cyan-300 dark:via-blue-400 dark:to-purple-400"
+          >
+            Statistics Dashboard
+          </h2>
+          <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            A real-time snapshot of my problem-solving and open-source activity across LeetCode, Codeforces, and GitHub.
+          </p>
+        </motion.div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-12">
-          {[
-            { label: 'LeetCode Problems Solved', value: stats.loading ? 'Loading...' : stats.leetcode.totalSolved, icon: <FaCode />, color: 'blue' },
-            { label: 'LeetCode Rank', value: stats.loading ? 'Loading...' : stats.leetcode.ranking, icon: <FaChartLine />, color: 'green' },
-            // userContestRanking.rating is the actual competitive rating (e.g., 1706)
-            { label: 'LeetCode Rating', value: stats.loading ? 'Loading...' : formatRating(stats.leetcode.contestRating), icon: <FaStar />, color: 'yellow' },
-            { label: 'Codeforces Problems Solved', value: stats.loading ? 'Loading...' : stats.codeforces.totalSolved, icon: <FaCode />, color: 'blue' },
-            { label: 'Codeforces Rating', value: stats.loading ? 'Loading...' : stats.codeforces.rating, icon: <FaChartLine />, color: 'green' },
-            { label: 'GitHub Repositories', value: stats.loading ? 'Loading...' : stats.github.publicRepos, icon: <FaGithub />, color: 'purple' },
-          ].map((metric, index) => (
-            <motion.div
-              key={index}
-              className="bg-gray-100/80 dark:bg-black/20 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className={`flex items-center gap-3 mb-2 ${metricColorClass(metric.color)}`}>
-                {metric.icon}
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">{metric.label}</h3>
+        {/* Bento grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
+          {/* Featured LeetCode card */}
+          <motion.div
+            {...fadeUp}
+            transition={{ duration: 0.5 }}
+            className={`${cardBase} col-span-2 row-span-2 p-6 sm:p-8 group`}
+          >
+            <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gradient-to-br from-orange-400/30 to-amber-500/10 blur-2xl" />
+            <div className="relative">
+              <div className="flex items-center gap-3 text-orange-500 dark:text-orange-400 mb-4">
+                <FaCode className="text-xl" />
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                  LeetCode Problems Solved
+                </h3>
               </div>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{metric.value}</p>
+              <p className="text-6xl sm:text-7xl font-extrabold tabular-nums leading-none bg-gradient-to-br from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                {stats.loading ? '—' : lcTotal}
+              </p>
+
+              <div className="mt-8 space-y-4">
+                {difficulty.map((d) => {
+                  const pct = lcTotal ? Math.round((d.value / lcTotal) * 100) : 0;
+                  return (
+                    <div key={d.label}>
+                      <div className="flex justify-between text-sm mb-1.5">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{d.label}</span>
+                        <span className="tabular-nums text-gray-500 dark:text-gray-400">
+                          {d.value} <span className="opacity-60">({pct}%)</span>
+                        </span>
+                      </div>
+                      <div className="h-2.5 rounded-full bg-gray-200/70 dark:bg-white/10 overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: d.color }}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${pct}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.9, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Compact metric cards */}
+          {[
+            { label: 'LeetCode Rating', value: stats.loading ? '—' : formatRating(stats.leetcode.contestRating), icon: <FaStar />, accent: 'from-yellow-400/30 to-amber-500/10', text: 'text-amber-500 dark:text-amber-300' },
+            { label: 'Global Ranking', value: stats.loading ? '—' : stats.leetcode.ranking, icon: <FaChartLine />, accent: 'from-emerald-400/30 to-green-500/10', text: 'text-emerald-500 dark:text-emerald-300' },
+            { label: 'Codeforces Rating', value: stats.loading ? '—' : stats.codeforces.rating, icon: <FaChartLine />, accent: 'from-sky-400/30 to-blue-500/10', text: 'text-sky-500 dark:text-sky-300' },
+            { label: 'Codeforces Solved', value: stats.loading ? '—' : stats.codeforces.totalSolved, icon: <FaCode />, accent: 'from-blue-400/30 to-indigo-500/10', text: 'text-blue-500 dark:text-blue-300' },
+            { label: 'GitHub Repos', value: stats.loading ? '—' : stats.github.publicRepos, icon: <FaGithub />, accent: 'from-purple-400/30 to-fuchsia-500/10', text: 'text-purple-500 dark:text-purple-300' },
+            { label: 'GitHub Stars', value: stats.loading ? '—' : stats.github.totalStars, icon: <FaStar />, accent: 'from-pink-400/30 to-rose-500/10', text: 'text-pink-500 dark:text-pink-300' },
+          ].map((m, i) => (
+            <motion.div
+              key={m.label}
+              {...fadeUp}
+              transition={{ duration: 0.45, delay: 0.05 * i }}
+              whileHover={{ y: -4 }}
+              className={`${cardBase} p-5 sm:p-6`}
+            >
+              <div className={`absolute -top-10 -right-10 h-28 w-28 rounded-full bg-gradient-to-br ${m.accent} blur-2xl`} />
+              <div className="relative">
+                <div className={`flex items-center gap-2 mb-3 ${m.text}`}>
+                  {m.icon}
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                    {m.label}
+                  </h3>
+                </div>
+                <p className="text-3xl sm:text-4xl font-bold tabular-nums break-words">{m.value}</p>
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Monthly Progress */}
-          <motion.div
-            className="bg-gray-100/80 dark:bg-black/20 backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">Monthly Activity (LeetCode)</h3>
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 sm:gap-6 mb-6">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className={`${cardBase} lg:col-span-3 p-6 sm:p-8`}>
+            <h3 className="text-lg font-bold mb-6">Monthly Activity <span className="text-gray-400 font-normal text-sm">· LeetCode</span></h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={leetcodeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="problems" stroke="#4a90e2" strokeWidth={2} />
+              <LineChart data={leetcodeData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#22d3ee" />
+                    <stop offset="100%" stopColor="#a855f7" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" vertical={false} />
+                <XAxis dataKey="month" stroke="#94a3b8" tickLine={false} axisLine={false} fontSize={12} />
+                <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} fontSize={12} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(148,163,184,0.3)' }} />
+                <Line type="monotone" dataKey="problems" stroke="url(#lineGrad)" strokeWidth={3} dot={{ r: 3, fill: '#22d3ee' }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </motion.div>
 
-          {/* Language Distribution */}
-          <motion.div
-            className="bg-gray-100/80 dark:bg-black/20 backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">Problems Solved by Language</h3>
+          <motion.div {...fadeUp} transition={{ duration: 0.6, delay: 0.15 }} className={`${cardBase} lg:col-span-2 p-6 sm:p-8`}>
+            <h3 className="text-lg font-bold mb-6">Solved by Language</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={languageStats}
-                  cx="50%"
-                  cy="50%"
-                  label={false}
-                  outerRadius={105}
-                  fill="#8884d8"
-                  dataKey="problems"
-                >
+                <Pie data={languageStats} cx="50%" cy="45%" label={false} innerRadius={55} outerRadius={95} paddingAngle={3} dataKey="problems">
                   {languageStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.1)" />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend
-                  layout="horizontal"
-                  verticalAlign="bottom"
-                  align="center"
-                  wrapperStyle={{ fontSize: '12px' }}
-                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px' }} iconType="circle" />
               </PieChart>
             </ResponsiveContainer>
           </motion.div>
         </div>
 
         {/* Platform Comparison */}
-        <motion.div
-          className="bg-gray-100/80 dark:bg-black/20 backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">Platform Comparison</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={platformStats}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="name" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip />
-              <Bar dataKey="problems" radius={[8, 8, 0, 0]}>
+        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className={`${cardBase} p-6 sm:p-8 mb-10`}>
+          <h3 className="text-lg font-bold mb-6">Platform Comparison <span className="text-gray-400 font-normal text-sm">· total problems</span></h3>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={platformStats} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" vertical={false} />
+              <XAxis dataKey="name" stroke="#94a3b8" tickLine={false} axisLine={false} fontSize={12} />
+              <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} fontSize={12} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
+              <Bar dataKey="problems" radius={[10, 10, 0, 0]} maxBarSize={90}>
                 {platformStats.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
@@ -323,35 +379,16 @@ const Statistics = ({ className }) => {
           </ResponsiveContainer>
         </motion.div>
 
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: 'LeetCode Rank', value: stats.loading ? 'Loading...' : stats.leetcode.ranking, platform: 'Global Ranking' },
-            { title: 'GitHub Stars', value: stats.loading ? 'Loading...' : stats.github.totalStars, platform: 'Total stars across repos' },
-            { title: 'GitHub Followers', value: stats.loading ? 'Loading...' : stats.github.followers, platform: 'People following you' },
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              className="bg-gray-100/80 dark:bg-black/20 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">{stat.title}</h4>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">{stat.platform}</p>
-            </motion.div>
-          ))}
+        <div className="flex justify-center">
+          <motion.button
+            onClick={() => router.push('/')}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-7 py-3 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition"
+          >
+            ← Back to Home
+          </motion.button>
         </div>
-        <div className="flex justify-center mt-12">
-  <button
-    onClick={() => router.push('/')}
-    className="px-6 py-3 rounded-xl bg-blue-500 text-white font-semibold shadow-lg hover:bg-blue-600 transition"
-  >
-    ← Back to Home
-  </button>
-</div>
       </div>
     </div>
   );

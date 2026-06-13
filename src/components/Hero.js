@@ -1,94 +1,30 @@
 "use client";
 
-import React, { useCallback } from 'react';
-import Particles from 'react-tsparticles';
-import { loadSlim } from 'tsparticles-slim';
+import React from 'react';
+import dynamic from 'next/dynamic';
 import { FaGithub, FaLinkedin, FaFileAlt, FaCode } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { useThemeMode, usePrefersReducedMotion } from '../hooks/useThemeMode';
+
+const HeroScene = dynamic(() => import('./three/HeroScene'), { ssr: false });
 
 const Hero = () => {
-  const particlesInit = useCallback(async (engine) => {
-    await loadSlim(engine);
-  }, []);
-
-  const particlesOptions = {
-    background: {
-      color: {
-        value: 'transparent',
-      },
-    },
-    fpsLimit: 120,
-    interactivity: {
-      events: {
-        onHover: {
-          enable: true,
-          mode: 'repulse',
-        },
-        resize: true,
-      },
-      modes: {
-        repulse: {
-          distance: 100,
-          duration: 0.4,
-        },
-      },
-    },
-    particles: {
-      color: {
-        value: '#4A90E2',
-      },
-      links: {
-        color: '#4A90E2',
-        distance: 150,
-        enable: true,
-        opacity: 0.2,
-        width: 1,
-      },
-      collisions: {
-        enable: true,
-      },
-      move: {
-        direction: 'none',
-        enable: true,
-        outModes: {
-          default: 'bounce',
-        },
-        random: false,
-        speed: 1,
-        straight: false,
-      },
-      number: {
-        density: {
-          enable: true,
-          area: 800,
-        },
-        value: 80,
-      },
-      opacity: {
-        value: 0.4,
-      },
-      shape: {
-        type: 'circle',
-      },
-      size: {
-        value: { min: 1, max: 3 },
-      },
-    },
-    detectRetina: true,
-  };
+  const isDark = useThemeMode();
+  const reducedMotion = usePrefersReducedMotion();
 
   return (
     <section 
-      className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+      className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500"
       role="banner"
       aria-label="Hero section"
       id="hero"
     >
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={particlesOptions}
-        className="absolute inset-0 z-0"
+      <div className="absolute inset-0 z-0">
+        <HeroScene isDark={isDark} reducedMotion={reducedMotion} />
+      </div>
+      <div
+        className="absolute inset-0 z-0 bg-gradient-to-t from-white/70 via-transparent to-white/30 dark:from-slate-950/80 dark:via-transparent dark:to-slate-950/40"
+        aria-hidden="true"
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -110,7 +46,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          An aspiring Software Developer with a strong foundation in DSA, Competitive Programming, and an evolving interest in AI/ML. I enjoy building efficient systems and solving real-world problems through code.
+          A Software Developer passionate about open source, backend engineering, and scalable systems. Currently focused on building impactful projects, contributing to large-scale communities, and strengthening my expertise in modern software development.
         </motion.p>
         <motion.div 
           className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-6"

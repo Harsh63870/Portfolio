@@ -61,19 +61,23 @@ const Achievements = () => {
           .slice(0, 3)
           .map((l) => `${l.languageName} (${l.problemsSolved})`);
 
-        const nextAchievements = [
-          `Solved ${totalSolved}+ problems on LeetCode.`,
-          `Difficulty split: Easy ${easySolved}, Medium ${mediumSolved}, Hard ${hardSolved}.`,
-          topLanguages.length > 0
-            ? `Top languages by solved count: ${topLanguages.join(', ')}.`
-            : 'Language-wise solved count is currently unavailable.',
-          contestRating
-            ? `Current contest rating: ${Math.round(contestRating)}.`
-            : 'Contest rating currently unavailable (possibly unrated).',
-          globalRank
-            ? `Contest global ranking: #${globalRank}. Profile ranking: #${profileRank}.`
-            : `Profile ranking: #${profileRank}.`,
-        ];
+          const nextAchievements = [
+            `Solved ${totalSolved}+ problems on LeetCode, strengthening problem-solving and algorithmic thinking.`,
+          
+            `Balanced practice across difficulty levels: Easy ${easySolved}, Medium ${mediumSolved}, Hard ${hardSolved}.`,
+          
+            topLanguages.length > 0
+              ? `Primarily solved problems using ${topLanguages.join(', ')}, with a focus on C++ for performance and efficiency.`
+              : 'Focused on C++ and core programming fundamentals.',
+          
+            contestRating
+              ? `Current contest rating: ${Math.round(contestRating)}, reflecting consistent participation in competitive programming contests.`
+              : 'Actively participating in competitive programming contests to improve problem-solving speed and accuracy.',
+          
+            globalRank
+              ? `Contest participation rank: #${globalRank}, with a profile rank of #${profileRank}.`
+              : `Profile rank: #${profileRank}, with ongoing participation in contests and problem-solving platforms.`,
+          ];
 
         setAchievements(nextAchievements);
       } catch (error) {
@@ -87,7 +91,7 @@ const Achievements = () => {
   return (
     <section
       id="achievements"
-      className="py-16 sm:py-20 md:py-24 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+      className="py-16 sm:py-20 md:py-24 text-gray-900 dark:text-white"
       aria-labelledby="achievements-heading"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

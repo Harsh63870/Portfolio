@@ -4,6 +4,7 @@ import { ThemeProvider } from "../contexts/ThemeContext";
 import ThemeToggle from "../components/ThemeToggle";
 import Navigation from "../components/Navigation";
 import ScrollToTop from "../components/ScrollToTop";
+import SiteBackground from "../components/three/SiteBackground";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <ThemeProvider>
+          <SiteBackground />
           <ThemeToggle />
           {children}
           {/* <Navigation /> */}

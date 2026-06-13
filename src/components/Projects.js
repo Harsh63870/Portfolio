@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaGithub, FaExternalLinkAlt, FaDownload, FaStar, FaCodeBranch, FaFilter } from 'react-icons/fa';
 import ProjectModal from './ProjectModal';
+import TiltCard from './TiltCard';
 
 const projects = [
   {
@@ -138,7 +139,7 @@ const Projects = () => {
   return (
     <section 
       id="projects" 
-      className="py-16 sm:py-20 md:py-24 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+      className="py-16 sm:py-20 md:py-24 text-gray-900 dark:text-white"
       aria-labelledby="projects-heading"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,19 +178,18 @@ const Projects = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10" style={{ perspective: 1200 }}>
           {filteredProjects.map((project, index) => (
+            <TiltCard key={project.title} className="h-full">
             <motion.article
-              key={project.title}
-              className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/90 dark:bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer"
+              className="group h-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/90 dark:bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer"
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: index * 0.06 }}
               onClick={() => handleProjectClick(project)}
-              whileHover={{ y: -5 }}
             >
-              <div className="p-6 sm:p-7">
+              <div className="p-6 sm:p-7" style={{ transform: 'translateZ(40px)' }}>
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-cyan-300 dark:to-purple-400">
                     {project.title}
@@ -268,6 +268,7 @@ const Projects = () => {
                 </div>
               </div>
             </motion.article>
+            </TiltCard>
           ))}
         </div>
 
