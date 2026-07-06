@@ -76,7 +76,7 @@ const Hero = () => {
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           <motion.a
-            href="\HarshVardhanPandey.pdf"
+            href="\HarshvardhanpandeyResume2806.pdf"
             download
             aria-label="Download resume PDF"
             whileHover={{ scale: 1.05, boxShadow: '0px 0px 25px rgba(74, 144, 226, 0.6)' }}
