@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { FaGithub, FaLinkedin, FaFileAlt, FaCode } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useThemeMode, usePrefersReducedMotion } from '../hooks/useThemeMode';
@@ -14,6 +15,7 @@ const Hero = () => {
 
   return (
     <section 
+      id="hero"
       className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500"
       role="banner"
       aria-label="Hero section"
@@ -31,6 +33,25 @@ const Hero = () => {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="relative z-10 bg-white/80 dark:bg-black/50 backdrop-blur-3xl p-8 sm:p-12 rounded-3xl border border-gray-200/50 dark:border-white/30 shadow-2xl text-center max-w-4xl mx-4 shadow-blue-400/20"
       >
+        <motion.div
+          className="mx-auto mb-8 w-fit"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1, duration: 0.6, ease: 'easeOut' }}
+        >
+          <div className="relative p-1 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-400 shadow-xl shadow-blue-500/30 dark:shadow-cyan-500/20">
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden ring-4 ring-white/80 dark:ring-white/10">
+              <Image
+                src="/images/profile.jpeg"
+                alt="Harsh Vardhan Pandey"
+                fill
+                priority
+                sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
+                className="object-cover object-center"
+              />
+            </div>
+          </div>
+        </motion.div>
         <motion.h1 
           className="text-4xl sm:text-6xl md:text-7xl font-bold text-gray-900 dark:text-white tracking-tighter"
           initial={{ opacity: 0, y: -20 }} 
